@@ -9,3 +9,4 @@ DATABASES = {
 }
 
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
+SECRET_KEY = "taskflow-test-key-with-at-least-sixty-four-characters-for-jwt-signing"

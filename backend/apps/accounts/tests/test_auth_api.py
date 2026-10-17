@@ -37,7 +37,7 @@ def test_invalid_login_uses_error_envelope(member):
     response = login(APIClient(), password="wrong-password")
 
     assert response.status_code == 401
-    assert response.data["code"] == "no_active_account"
+    assert response.data["code"] == "authentication_failed"
     assert response.data["details"] == {}
 
 

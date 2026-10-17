@@ -23,6 +23,13 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "date_joined", "updated_at")
 
 
+class UserOptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("id", "email", "full_name", "role", "avatar_url")
+        read_only_fields = fields
+
+
 class UserManageSerializer(UserSerializer):
     password = serializers.CharField(
         write_only=True,

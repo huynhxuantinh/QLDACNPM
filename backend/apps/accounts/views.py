@@ -1,4 +1,5 @@
 from rest_framework import generics, serializers, status, viewsets
+from rest_framework.filters import SearchFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -7,12 +8,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from .models import User
-from .permissions import IsSystemAdmin
+from .permissions import IsProjectManagerOrAdmin, IsSystemAdmin
 from .serializers import (
     ChangePasswordSerializer,
     LoginSerializer,
     LogoutSerializer,
     UserManageSerializer,
+    UserOptionSerializer,
     UserSerializer,
 )
 
@@ -67,3 +69,30 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserManageSerializer
     permission_classes = [IsSystemAdmin]
     http_method_names = ["get", "post", "patch", "head", "options"]
+    filter_backends = [SearchFilter]
+    search_fields = ["email", "full_name"]
+
+    def get_permissions(self):
+        permission_classes = (
+            [IsProjectManagerOrAdmin]
+            if self.action == "list"
+            else [IsSystemAdmin]
+        )
+        return [permission() for permission in permission_classes]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if (
+            self.action == "list"
+            and getattr(self.request.user, "role", None) == User.Role.PROJECT_MANAGER
+        ):
+            return queryset.filter(is_active=True)
+        return queryset
+
+    def get_serializer_class(self):
+        if (
+            self.action == "list"
+            and getattr(self.request.user, "role", None) == User.Role.PROJECT_MANAGER
+        ):
+            return UserOptionSerializer
+        return super().get_serializer_class()

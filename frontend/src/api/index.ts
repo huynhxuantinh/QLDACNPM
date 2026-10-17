@@ -1,6 +1,6 @@
 export const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api";
-import type { ApiErrorBody, DashboardSummary, Paginated, Project, ProjectMember, Task, TaskStatus, User } from "../types";
+import type { ApiErrorBody, DashboardSummary, Paginated, Project, ProjectMember, Task, TaskStatus, User, UserOption } from "../types";
 
 const API_URL = API_BASE_URL.replace(/\/$/, "");
 const ACCESS_KEY = "taskflow_access";
@@ -116,5 +116,6 @@ export const api = {
   deleteTask: (id: number) => request<void>(`/tasks/${id}/`, { method: "DELETE" }),
   updateTaskStatus: (id: number, status: TaskStatus) => request<Task>(`/tasks/${id}/status/`, { method: "PATCH", body: JSON.stringify({ status }) }),
   users: () => requestAllPages<User>("/users/"),
+  userOptions: (search = "") => requestAllPages<UserOption>(`/users/${search ? `?search=${encodeURIComponent(search)}` : ""}`),
   createUser: (data: Record<string, unknown>) => request<User>("/users/", { method: "POST", body: JSON.stringify(data) }),
 };

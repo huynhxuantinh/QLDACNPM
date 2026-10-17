@@ -15,6 +15,8 @@ export interface User {
   updated_at?: string;
 }
 
+export type UserOption = Pick<User, "id" | "email" | "full_name" | "role" | "avatar_url">;
+
 export interface Project {
   id: number;
   name: string;

@@ -21,6 +21,7 @@ const existingMembers: ProjectMember[] = [{
 
 describe("MemberPicker", () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     vi.mocked(api.userOptions).mockResolvedValue({
       count: 2,
       next: null,
@@ -46,5 +47,28 @@ describe("MemberPicker", () => {
 
     await waitFor(() => expect(api.addProjectMember).toHaveBeenCalledWith(9, 3));
     expect(onAdded).toHaveBeenCalledOnce();
+  });
+
+  it("tìm người dùng theo tên hoặc email", async () => {
+    const user = userEvent.setup();
+    render(<MemberPicker projectId={9} members={[]} onAdded={vi.fn()} onCancel={vi.fn()} />);
+
+    await screen.findByRole("option", { name: /Có thể chọn/ });
+    await user.type(screen.getByPlaceholderText("Nhập tên hoặc email"), "An");
+
+    await waitFor(() => expect(api.userOptions).toHaveBeenLastCalledWith("An"));
+  });
+
+  it("hiển thị lỗi nếu không thể thêm thành viên", async () => {
+    vi.mocked(api.addProjectMember).mockRejectedValueOnce(new Error("Không có quyền thêm"));
+    const user = userEvent.setup();
+    const onAdded = vi.fn();
+    render(<MemberPicker projectId={9} members={existingMembers} onAdded={onAdded} onCancel={vi.fn()} />);
+
+    await user.selectOptions(await screen.findByLabelText("Chọn người dùng"), "3");
+    await user.click(screen.getByRole("button", { name: "Thêm thành viên" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Không có quyền thêm");
+    expect(onAdded).not.toHaveBeenCalled();
   });
 });

@@ -64,7 +64,7 @@ def test_project_manager_can_search_active_users_with_minimal_fields(
 ):
     user_model = get_user_model()
     user_model.objects.create_user(
-        email="inactive@example.com",
+        email="member-inactive@example.com",
         password="StrongPass123!",
         full_name="Thành viên ngưng hoạt động",
         is_active=False,
@@ -76,7 +76,7 @@ def test_project_manager_can_search_active_users_with_minimal_fields(
     )
     client = authenticated_client(project_manager_user)
 
-    response = client.get("/api/users/", {"search": "member@example.com"})
+    response = client.get("/api/users/", {"search": "member"})
 
     assert response.status_code == 200
     assert response.data["count"] == 1

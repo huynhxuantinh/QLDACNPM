@@ -10,6 +10,7 @@ import { useAuth } from "../auth";
 import { TaskBoard } from "../tasks";
 import { ProjectMembers } from "./ProjectMembers";
 import { hasInvalidProjectDates, PROJECT_DATE_ERROR } from "./projectDates";
+import { MemberPicker } from "./MemberPicker";
 
 const statusLabel: Record<ProjectStatus, string> = { PLANNING: "Lập kế hoạch", ACTIVE: "Đang thực hiện", COMPLETED: "Hoàn thành", ARCHIVED: "Đã lưu trữ" };
 
@@ -46,12 +47,6 @@ export function ProjectDetailPage() {
     try { await api.updateProject(project.id, Object.fromEntries(new FormData(event.currentTarget))); setEditOpen(false); await load(); }
     catch (reason) { setError(reason instanceof Error ? reason.message : "Không thể cập nhật dự án."); }
   };
-  const addMember = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault(); setError("");
-    const id = Number(new FormData(event.currentTarget).get("user_id"));
-    try { await api.addProjectMember(project.id, id); setMemberOpen(false); await load(); }
-    catch (reason) { setError(reason instanceof Error ? reason.message : "Không thể thêm thành viên."); }
-  };
   const removeMember = async (userId: number) => {
     setError("");
     try { await api.removeProjectMember(project.id, userId); await load(); }
@@ -87,7 +82,14 @@ export function ProjectDetailPage() {
     <section className="detail-board"><div className="section-title"><div><p className="panel-kicker">Thực thi</p><h2>Công việc dự án</h2></div><span>{tasks.length} công việc</span></div>{tasks.length ? <TaskBoard tasks={tasks} onStatusChange={(id, status) => void changeStatus(id, status)} /> : <EmptyState title="Chưa có công việc" text="Tạo công việc từ bảng Kanban" />}</section>
 
     <Modal title="Chỉnh sửa dự án" open={editOpen} onClose={() => setEditOpen(false)}><form className="modal-form" onSubmit={update}><label>Tên dự án<input name="name" defaultValue={project.name} required /></label><label>Mô tả<textarea name="description" rows={3} defaultValue={project.description} /></label><div className="form-row"><label>Ngày bắt đầu<input name="start_date" type="date" max={editDueDate || undefined} value={editStartDate} onChange={(event) => setEditStartDate(event.target.value)} /></label><label>Hạn hoàn thành<input name="due_date" type="date" min={editStartDate || undefined} value={editDueDate} onChange={(event) => setEditDueDate(event.target.value)} /></label></div><label>Trạng thái<select name="status" defaultValue={project.status}><option value="PLANNING">Lập kế hoạch</option><option value="ACTIVE">Đang thực hiện</option><option value="COMPLETED">Hoàn thành</option><option value="ARCHIVED">Đã lưu trữ</option></select></label>{error && <p className="form-error" role="alert">{error}</p>}<div className="modal-actions"><button type="button" className="ghost-button" onClick={() => setEditOpen(false)}>Hủy</button><button className="primary-button">Lưu thay đổi</button></div></form></Modal>
-    <Modal title="Thêm thành viên" open={memberOpen} onClose={() => setMemberOpen(false)}><form className="modal-form" onSubmit={addMember}><label>ID người dùng<input name="user_id" type="number" min="1" required placeholder="Ví dụ: 3" /></label><p className="form-hint">ID hiển thị trong trang Người dùng của quản trị viên.</p>{error && <p className="form-error">{error}</p>}<div className="modal-actions"><button type="button" className="ghost-button" onClick={() => setMemberOpen(false)}>Hủy</button><button className="primary-button">Thêm thành viên</button></div></form></Modal>
+    <Modal title="Thêm thành viên" open={memberOpen} onClose={() => setMemberOpen(false)}>
+      <MemberPicker
+        projectId={project.id}
+        members={members}
+        onCancel={() => setMemberOpen(false)}
+        onAdded={async () => { await load(); setMemberOpen(false); }}
+      />
+    </Modal>
     <Modal title="Lưu trữ dự án?" open={archiveOpen} onClose={() => setArchiveOpen(false)}><div className="confirm-content"><p>Dự án <strong>{project.name}</strong> sẽ chuyển sang trạng thái lưu trữ.</p><div className="modal-actions"><button className="ghost-button" onClick={() => setArchiveOpen(false)}>Hủy</button><button className="danger-button" onClick={() => void archive()}>Lưu trữ dự án</button></div></div></Modal>
   </div>;
 }

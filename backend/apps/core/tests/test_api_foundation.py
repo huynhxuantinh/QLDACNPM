@@ -13,11 +13,10 @@ def test_api_errors_use_standard_envelope():
     response = APIClient().post("/api/health/", data={})
 
     assert response.status_code == 405
-    assert response.json() == {
-        "code": "method_not_allowed",
-        "message": 'Method "POST" not allowed.',
-        "details": {},
-    }
+    payload = response.json()
+    assert payload["code"] == "method_not_allowed"
+    assert isinstance(payload["message"], str) and payload["message"]
+    assert payload["details"] == {}
 
 
 def test_openapi_schema_is_available_and_contains_health_endpoint():

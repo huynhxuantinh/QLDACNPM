@@ -7,12 +7,13 @@
 - [x] BE-03 — Dự án, thành viên và object-level permission.
 - [x] BE-04 — Task CRUD, filter/search, workflow và soft delete.
 - [x] BE-05 — Dashboard, seed, API docs và cấu hình production.
-- [ ] Xác nhận container healthy trên PostgreSQL thật và deploy staging; Docker Engine trên máy cần được bật bằng quyền hệ thống.
+- [x] Container development healthy và toàn bộ test đạt trên PostgreSQL Docker thật.
+- [ ] Deploy staging.
 - [x] FE-01 — Router, API client JWT, đăng nhập, protected layout và responsive.
 - [x] FE-02 — Dự án, chi tiết dự án, thành viên, task CRUD, filter và quản trị user.
 - [x] FE-03 — Dashboard KPI, Kanban đổi trạng thái, filter, loading/error/empty state và E2E.
 
-> Theo quyết định ngày 17/10/2026, frontend được triển khai sớm trong khi chờ quyền bật Docker. Backend Gate vẫn còn bước kiểm tra container PostgreSQL và staging.
+> Theo quyết định ngày 17/10/2026, frontend được triển khai sớm. Container PostgreSQL đã được xác nhận; Backend Gate chỉ còn bước deploy staging.
 
 ## 1. Nguyên tắc triển khai
 

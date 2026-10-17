@@ -6,7 +6,7 @@ services:
       context: ./frontend
       target: development
     ports:
-      - "5173:5173"
+      - "${FRONTEND_PORT:-5173}:5173"
     environment:
       VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000/api}
     volumes:
@@ -28,7 +28,7 @@ services:
       sh -c "python manage.py migrate --noinput &&
       python manage.py runserver 0.0.0.0:8000"
     ports:
-      - "8000:8000"
+      - "${BACKEND_PORT:-8000}:8000"
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-taskflow}
       POSTGRES_USER: ${POSTGRES_USER:-taskflow}

@@ -5,7 +5,7 @@ RUN npm ci
 
 FROM node:22-alpine AS development
 WORKDIR /app
-COPY --from=dependencies /app/node_modules ./node_modules
+COPY --from=dependencies --chown=node:node /app/node_modules ./node_modules
 COPY --chown=node:node . .
 USER node
 EXPOSE 5173

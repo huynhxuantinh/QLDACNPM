@@ -22,5 +22,18 @@ describe("LoginPage", () => {
 
     expect(screen.getByText("manager@taskflow.local")).toBeInTheDocument();
   });
+
+  it("fills demo credentials and reports login errors", async () => {
+    const user = userEvent.setup();
+    const onLogin = vi.fn().mockRejectedValue(new Error("Sai thông tin đăng nhập"));
+    render(<LoginPage onLogin={onLogin} />);
+
+    await user.click(screen.getByRole("button", { name: /Tài khoản demo/i }));
+    expect(screen.getByLabelText("Email")).toHaveValue("manager@taskflow.local");
+    await user.click(screen.getByRole("button", { name: "Hiện mật khẩu" }));
+    expect(screen.getByLabelText("Mật khẩu")).toHaveAttribute("type", "text");
+    await user.click(screen.getByRole("button", { name: "Đăng nhập" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Sai thông tin đăng nhập");
+  });
 });
 

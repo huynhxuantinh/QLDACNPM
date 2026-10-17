@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import { TaskBoard } from "./TaskBoard";
@@ -25,12 +26,21 @@ describe("TaskBoard", () => {
   it("shows four workflow columns and task details", () => {
     render(<TaskBoard tasks={tasks} onStatusChange={vi.fn()} />);
 
-    expect(screen.getByText("Cần làm")).toBeInTheDocument();
-    expect(screen.getByText("Đang làm")).toBeInTheDocument();
-    expect(screen.getByText("Chờ duyệt")).toBeInTheDocument();
-    expect(screen.getByText("Hoàn thành")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Cần làm" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Đang làm" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Chờ duyệt" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Hoàn thành" })).toBeInTheDocument();
     expect(screen.getByText("Thiết kế database")).toBeInTheDocument();
     expect(screen.getByText("Minh Anh")).toBeInTheDocument();
+  });
+
+  it("emits a status update selected by the user", async () => {
+    const onStatusChange = vi.fn();
+    const user = userEvent.setup();
+    render(<TaskBoard tasks={tasks} onStatusChange={onStatusChange} />);
+
+    await user.selectOptions(screen.getByLabelText("Trạng thái Thiết kế database"), "DONE");
+    expect(onStatusChange).toHaveBeenCalledWith(1, "DONE");
   });
 });
 

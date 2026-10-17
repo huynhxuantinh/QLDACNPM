@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatDueDate, groupTasksByStatus, projectProgress } from "./task";
+import { formatDueDate, groupTasksByStatus, initials, projectProgress } from "./task";
 import type { Task } from "../types";
 
 const task = (id: number, status: Task["status"]): Task => ({
@@ -39,6 +39,8 @@ describe("task utilities", () => {
 
   it("renders an empty due date safely", () => {
     expect(formatDueDate(null)).toBe("Chưa đặt hạn");
+    expect(formatDueDate("2026-10-20T00:00:00Z")).toContain("2026");
+    expect(initials("Nguyễn Minh Anh")).toBe("MA");
   });
 });
 

@@ -6,6 +6,7 @@ import { api } from "../../api";
 import { Avatar, EmptyState, Modal, PageHeader } from "../../components";
 import type { Project, ProjectStatus } from "../../types";
 import { formatDueDate } from "../../utils";
+import { hasInvalidProjectDates, PROJECT_DATE_ERROR, todayForDateInput } from "./projectDates";
 
 const statusLabel: Record<ProjectStatus, string> = { PLANNING: "Lập kế hoạch", ACTIVE: "Đang thực hiện", COMPLETED: "Hoàn thành", ARCHIVED: "Đã lưu trữ" };
 
@@ -14,18 +15,25 @@ export function ProjectsPage() {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const today = todayForDateInput();
   const load = () => api.projects().then((page) => setProjects(page.results));
   useEffect(() => { void load(); }, []);
 
   const create = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); setError("");
     const data = Object.fromEntries(new FormData(event.currentTarget));
+    if (hasInvalidProjectDates(String(data.start_date), String(data.due_date))) {
+      setError(PROJECT_DATE_ERROR);
+      return;
+    }
     try { await api.createProject(data); setOpen(false); await load(); } catch (reason) { setError(reason instanceof Error ? reason.message : "Không thể tạo dự án."); }
   };
   const visible = projects.filter((project) => project.name.toLowerCase().includes(search.toLowerCase()));
 
   return <div className="page-enter">
-    <PageHeader eyebrow="Danh mục dự án" title="Dự án của đội ngũ" description="Một nơi để kiểm soát phạm vi, thời hạn và người chịu trách nhiệm." actions={<button className="primary-button" onClick={() => setOpen(true)}><Plus size={17} /> Tạo dự án</button>} />
+    <PageHeader eyebrow="Danh mục dự án" title="Dự án của đội ngũ" description="Một nơi để kiểm soát phạm vi, thời hạn và người chịu trách nhiệm." actions={<button className="primary-button" onClick={() => { setStartDate(""); setDueDate(""); setError(""); setOpen(true); }}><Plus size={17} /> Tạo dự án</button>} />
     <div className="toolbar"><label className="search-box"><Search size={18} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm dự án..." /></label><span>{visible.length} dự án</span></div>
     <section className="project-grid">
       {visible.map((project, index) => <article className="project-card" key={project.id}>
@@ -39,9 +47,9 @@ export function ProjectsPage() {
     <Modal title="Tạo dự án mới" open={open} onClose={() => setOpen(false)}><form className="modal-form" onSubmit={create}>
       <label>Tên dự án<input name="name" required placeholder="Ví dụ: Website nội bộ" /></label>
       <label>Mô tả<textarea name="description" rows={3} placeholder="Mục tiêu và phạm vi chính" /></label>
-      <div className="form-row"><label>Ngày bắt đầu<input name="start_date" type="date" /></label><label>Hạn hoàn thành<input name="due_date" type="date" /></label></div>
+      <div className="form-row"><label>Ngày bắt đầu<input name="start_date" type="date" min={today} max={dueDate || undefined} value={startDate} onChange={(event) => setStartDate(event.target.value)} /></label><label>Hạn hoàn thành<input name="due_date" type="date" min={startDate || today} value={dueDate} onChange={(event) => setDueDate(event.target.value)} /></label></div>
       <label>Trạng thái<select name="status" defaultValue="PLANNING"><option value="PLANNING">Lập kế hoạch</option><option value="ACTIVE">Đang thực hiện</option></select></label>
-      {error && <p className="form-error">{error}</p>}<div className="modal-actions"><button type="button" className="ghost-button" onClick={() => setOpen(false)}>Hủy</button><button className="primary-button">Tạo dự án</button></div>
+      {error && <p className="form-error" role="alert">{error}</p>}<div className="modal-actions"><button type="button" className="ghost-button" onClick={() => setOpen(false)}>Hủy</button><button className="primary-button">Tạo dự án</button></div>
     </form></Modal>
   </div>;
 }

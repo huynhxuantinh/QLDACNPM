@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { BrowserRouter } from "react-router-dom";
@@ -30,7 +30,8 @@ describe("ProjectsPage date validation", () => {
     fireEvent.change(startDate, { target: { value: "2099-10-20" } });
     expect(dueDate).toHaveAttribute("min", "2099-10-20");
     fireEvent.change(dueDate, { target: { value: "2099-10-19" } });
-    fireEvent.submit(screen.getByRole("button", { name: "Tạo dự án" }).closest("form")!);
+    const dialog = screen.getByRole("dialog", { name: "Tạo dự án mới" });
+    fireEvent.submit(within(dialog).getByRole("button", { name: "Tạo dự án" }).closest("form")!);
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Hạn hoàn thành không được trước ngày bắt đầu.",

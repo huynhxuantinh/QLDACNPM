@@ -52,6 +52,8 @@ h1, h2, h3, h4, p { margin-top: 0; }
 .login-form h2 { margin-bottom: 8px; color: var(--ink); font-size: 36px; letter-spacing: -.04em; }
 .login-form > div:first-child { margin-bottom: 36px; }
 .login-form label, .modal-form label { display: grid; margin-bottom: 18px; gap: 8px; color: #334b54; font-size: 13px; font-weight: 750; }
+.login-form .form-field { margin-bottom: 18px; }
+.login-form .form-field label { margin-bottom: 8px; }
 .login-form input, .modal-form input, .modal-form textarea, .modal-form select { width: 100%; border: 1px solid #d7dcd7; border-radius: 12px; outline: none; background: white; color: var(--ink); transition: .2s border-color, .2s box-shadow; }
 .login-form input { height: 50px; padding: 0 15px; }
 .login-form input:focus, .modal-form input:focus, .modal-form textarea:focus, .modal-form select:focus { border-color: #52717b; box-shadow: 0 0 0 3px rgba(23,49,59,.08); }

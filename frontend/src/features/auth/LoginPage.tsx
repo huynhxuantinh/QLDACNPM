@@ -48,12 +48,12 @@ export function LoginPage({ onLogin }: Props) {
         <form className="login-form" onSubmit={submit}>
           <div><p className="eyebrow">Chào mừng trở lại</p><h2>Đăng nhập TaskFlow</h2><p className="muted">Tiếp tục quản lý công việc của đội ngũ.</p></div>
           <label>Email<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="ten@congty.vn" required /></label>
-          <label>Mật khẩu
+          <div className="form-field"><label htmlFor="login-password">Mật khẩu</label>
             <span className="password-field">
-              <input type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="••••••••" required />
+              <input id="login-password" type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="••••••••" required />
               <button type="button" aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"} onClick={() => setShowPassword((value) => !value)}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
             </span>
-          </label>
+          </div>
           {error && <p className="form-error" role="alert">{error}</p>}
           <button className="primary-button login-button" disabled={loading} type="submit">{loading ? "Đang đăng nhập..." : "Đăng nhập"}<ArrowRight size={18} /></button>
           <button className="demo-box" type="button" onClick={useDemo}>

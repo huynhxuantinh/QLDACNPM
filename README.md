@@ -42,4 +42,4 @@ Frontend production chạy tại http://localhost:8080. Cấu hình này dùng G
 
 ## Tài liệu
 
-Xem [bộ tài liệu tuần 1](./docs/README.md) và [kế hoạch 10 tuần](./plans/task-management-10-week-blueprint.md).
+Xem [bộ tài liệu tuần 1](./docs/README.md), [tài liệu Backend API](./docs/api/README.md) và [kế hoạch 10 tuần](./plans/task-management-10-week-blueprint.md).

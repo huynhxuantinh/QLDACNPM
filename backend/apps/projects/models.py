@@ -36,7 +36,7 @@ class Project(models.Model):
         ]
         constraints = [
             models.CheckConstraint(
-                check=(
+                condition=(
                     Q(start_date__isnull=True)
                     | Q(due_date__isnull=True)
                     | Q(due_date__gte=F("start_date"))

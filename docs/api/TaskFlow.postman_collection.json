@@ -1,0 +1,130 @@
+{
+  "info": {
+    "name": "TaskFlow API P0",
+    "description": "Luồng kiểm thử backend TaskFlow: đăng nhập, dự án, công việc và dashboard.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8000/api" },
+    { "key": "access", "value": "" },
+    { "key": "refresh", "value": "" },
+    { "key": "projectId", "value": "" },
+    { "key": "taskId", "value": "" },
+    { "key": "memberId", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{access}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login Manager",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "const body = pm.response.json();",
+                "pm.collectionVariables.set('access', body.access);",
+                "pm.collectionVariables.set('refresh', body.refresh);"
+              ]
+            }
+          }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"manager@taskflow.local\",\n  \"password\": \"Demo123!\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login/"
+          }
+        },
+        {
+          "name": "Current User",
+          "request": { "method": "GET", "url": "{{baseUrl}}/auth/me/" }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"refresh\": \"{{refresh}}\"\n}" },
+            "url": "{{baseUrl}}/auth/refresh/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "List Projects",
+          "request": { "method": "GET", "url": "{{baseUrl}}/projects/" }
+        },
+        {
+          "name": "Create Project",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": ["pm.collectionVariables.set('projectId', pm.response.json().id);"] }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dự án Postman\",\n  \"description\": \"Kiểm thử API\",\n  \"start_date\": \"2026-10-17\",\n  \"due_date\": \"2026-12-31\"\n}"
+            },
+            "url": "{{baseUrl}}/projects/"
+          }
+        },
+        {
+          "name": "Project Members",
+          "request": { "method": "GET", "url": "{{baseUrl}}/projects/{{projectId}}/members/" }
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "List Tasks",
+          "request": { "method": "GET", "url": "{{baseUrl}}/tasks/?project={{projectId}}" }
+        },
+        {
+          "name": "Create Task",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": ["pm.collectionVariables.set('taskId', pm.response.json().id);"] }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"project\": {{projectId}},\n  \"title\": \"Task từ Postman\",\n  \"priority\": \"HIGH\"\n}"
+            },
+            "url": "{{baseUrl}}/tasks/"
+          }
+        },
+        {
+          "name": "Start Task",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}" },
+            "url": "{{baseUrl}}/tasks/{{taskId}}/status/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard Summary",
+      "request": { "method": "GET", "url": "{{baseUrl}}/dashboard/summary/" }
+    }
+  ]
+}

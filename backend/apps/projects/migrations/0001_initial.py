@@ -60,6 +60,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='project',
-            constraint=models.CheckConstraint(check=models.Q(('start_date__isnull', True), ('due_date__isnull', True), ('due_date__gte', models.F('start_date')), _connector='OR'), name='projects_due_date_not_before_start'),
+            constraint=models.CheckConstraint(condition=models.Q(('start_date__isnull', True), ('due_date__isnull', True), ('due_date__gte', models.F('start_date')), _connector='OR'), name='projects_due_date_not_before_start'),
         ),
     ]

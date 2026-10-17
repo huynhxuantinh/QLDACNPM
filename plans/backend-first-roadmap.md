@@ -1,5 +1,15 @@
 # Lộ trình Backend trước, Frontend sau
 
+## Trạng thái triển khai
+
+- [x] BE-01 — Nền tảng, Custom User, OpenAPI, chuẩn lỗi, migration và CI.
+- [x] BE-02 — JWT, logout blacklist, đổi mật khẩu, quản trị user và RBAC.
+- [x] BE-03 — Dự án, thành viên và object-level permission.
+- [x] BE-04 — Task CRUD, filter/search, workflow và soft delete.
+- [x] BE-05 — Dashboard, seed, API docs và cấu hình production.
+- [ ] Xác nhận container healthy trên PostgreSQL thật và deploy staging; Docker Engine trên máy cần được bật bằng quyền hệ thống.
+- [ ] FE-01 trở đi chỉ bắt đầu sau bước xác nhận Docker/PostgreSQL.
+
 ## 1. Nguyên tắc triển khai
 
 - Hoàn thiện toàn bộ API **P0**, test, tài liệu OpenAPI, staging và dữ liệu seed trước khi viết màn hình nghiệp vụ frontend. Comment, ActivityLog và Notification là P1, không thuộc Backend Gate.

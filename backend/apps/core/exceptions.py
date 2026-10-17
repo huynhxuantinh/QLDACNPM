@@ -1,5 +1,11 @@
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import APIException, ValidationError
 from rest_framework.views import exception_handler
+
+
+class Conflict(APIException):
+    status_code = 409
+    default_detail = "Dữ liệu đang được sử dụng nên không thể thực hiện thao tác."
+    default_code = "conflict"
 
 
 def api_exception_handler(exc, context):

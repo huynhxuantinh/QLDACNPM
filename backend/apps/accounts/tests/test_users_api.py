@@ -153,6 +153,39 @@ def test_admin_can_lock_user(admin_user, member_user):
     assert member_user.is_active is False
 
 
+@pytest.mark.parametrize(
+    ("payload", "error_field"),
+    [
+        ({"is_active": False}, "is_active"),
+        ({"role": "MEMBER"}, "role"),
+    ],
+)
+def test_admin_cannot_lock_or_demote_themselves(admin_user, payload, error_field):
+    response = authenticated_client(admin_user).patch(
+        f"/api/users/{admin_user.id}/",
+        payload,
+        format="json",
+    )
+
+    assert response.status_code == 400
+    assert error_field in response.data["details"]
+    admin_user.refresh_from_db()
+    assert admin_user.is_active is True
+    assert admin_user.role == get_user_model().Role.ADMIN
+
+
+def test_admin_can_still_update_their_own_profile(admin_user):
+    response = authenticated_client(admin_user).patch(
+        f"/api/users/{admin_user.id}/",
+        {"full_name": "Tên quản trị mới"},
+        format="json",
+    )
+
+    assert response.status_code == 200
+    admin_user.refresh_from_db()
+    assert admin_user.full_name == "Tên quản trị mới"
+
+
 def test_user_delete_method_is_not_allowed(admin_user, member_user):
     response = authenticated_client(admin_user).delete(
         f"/api/users/{member_user.id}/"

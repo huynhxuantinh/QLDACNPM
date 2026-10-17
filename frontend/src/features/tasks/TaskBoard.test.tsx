@@ -42,5 +42,17 @@ describe("TaskBoard", () => {
     await user.selectOptions(screen.getByLabelText("Trạng thái Thiết kế database"), "DONE");
     expect(onStatusChange).toHaveBeenCalledWith(1, "DONE");
   });
+
+  it("exposes edit and delete actions for each task", async () => {
+    const onEdit = vi.fn();
+    const onDelete = vi.fn();
+    const user = userEvent.setup();
+    render(<TaskBoard tasks={tasks} onStatusChange={vi.fn()} onEdit={onEdit} onDelete={onDelete} />);
+
+    await user.click(screen.getByRole("button", { name: "Sửa Thiết kế database" }));
+    await user.click(screen.getByRole("button", { name: "Xóa Thiết kế database" }));
+    expect(onEdit).toHaveBeenCalledWith(tasks[0]);
+    expect(onDelete).toHaveBeenCalledWith(tasks[0]);
+  });
 });
 

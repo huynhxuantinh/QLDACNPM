@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatDueDate, groupTasksByStatus, initials, projectProgress } from "./task";
+import { formatDueDate, groupTasksByStatus, initials, projectProgress, tasksNeedingAttention } from "./task";
 import type { Task } from "../types";
 
 const task = (id: number, status: Task["status"]): Task => ({
@@ -41,6 +41,25 @@ describe("task utilities", () => {
     expect(formatDueDate(null)).toBe("Chưa đặt hạn");
     expect(formatDueDate("2026-10-20T00:00:00Z")).toContain("2026");
     expect(initials("Nguyễn Minh Anh")).toBe("MA");
+  });
+
+  it("chỉ lấy việc chưa hoàn thành đã quá hạn hoặc đến hạn trong 7 ngày", () => {
+    const now = new Date("2026-10-17T12:00:00Z");
+    const withDueDate = (id: number, status: Task["status"], dueDate: string) => ({
+      ...task(id, status),
+      title: `Việc ${id}`,
+      due_date: dueDate,
+    });
+
+    const result = tasksNeedingAttention([
+      withDueDate(1, "DONE", "2026-10-12T12:00:00Z"),
+      withDueDate(2, "TODO", "2026-10-16T12:00:00Z"),
+      withDueDate(3, "IN_PROGRESS", "2026-10-20T12:00:00Z"),
+      withDueDate(4, "REVIEW", "2026-10-30T12:00:00Z"),
+      task(5, "TODO"),
+    ], now);
+
+    expect(result.map((item) => item.id)).toEqual([2, 3]);
   });
 });
 

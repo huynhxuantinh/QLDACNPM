@@ -6,6 +6,13 @@ from django.db import IntegrityError, transaction
 pytestmark = pytest.mark.django_db
 
 
+def test_user_requires_email():
+    user_model = get_user_model()
+
+    with pytest.raises(ValueError, match="Email là bắt buộc"):
+        user_model.objects.create_user(email="", password="StrongPass123!")
+
+
 def test_user_uses_email_as_login_and_defaults_to_member():
     user_model = get_user_model()
 
@@ -21,6 +28,7 @@ def test_user_uses_email_as_login_and_defaults_to_member():
     assert user.role == user_model.Role.MEMBER
     assert user.check_password("StrongPass123!")
     assert not hasattr(user, "username")
+    assert str(user) == "an@example.com"
 
 
 def test_superuser_is_always_admin():
@@ -34,6 +42,25 @@ def test_superuser_is_always_admin():
     assert admin.role == user_model.Role.ADMIN
     assert admin.is_staff is True
     assert admin.is_superuser is True
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("is_staff", False, "is_staff=True"),
+        ("is_superuser", False, "is_superuser=True"),
+        ("role", "MEMBER", "vai trò ADMIN"),
+    ],
+)
+def test_superuser_rejects_invalid_privileges(field, value, message):
+    user_model = get_user_model()
+
+    with pytest.raises(ValueError, match=message):
+        user_model.objects.create_superuser(
+            email="admin@example.com",
+            password="StrongPass123!",
+            **{field: value},
+        )
 
 
 def test_email_is_case_insensitively_unique():

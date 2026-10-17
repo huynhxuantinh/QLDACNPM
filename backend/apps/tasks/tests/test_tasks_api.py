@@ -136,12 +136,12 @@ def test_only_owner_or_admin_can_edit_and_delete_task(project_team):
     assert client_for(manager).get(f"/api/tasks/{task_id}/").status_code == 404
 
 
-def test_assignee_updates_status_through_valid_workflow(project_team):
+def test_assignee_can_submit_for_review_but_cannot_approve(project_team):
     project, manager, member, _ = project_team
     task_id = create_task(project, manager, member).data["id"]
     client = client_for(member)
 
-    for expected_status in ("IN_PROGRESS", "REVIEW", "DONE"):
+    for expected_status in ("IN_PROGRESS", "REVIEW"):
         response = client.patch(
             f"/api/tasks/{task_id}/status/",
             {"status": expected_status},
@@ -150,15 +150,69 @@ def test_assignee_updates_status_through_valid_workflow(project_team):
         assert response.status_code == 200
         assert response.data["status"] == expected_status
 
-    assert response.data["completed_at"] is not None
+    forbidden = client.patch(
+        f"/api/tasks/{task_id}/status/",
+        {"status": "DONE"},
+        format="json",
+    )
 
-    reopened = client_for(manager).patch(
+    assert forbidden.status_code == 403
+    assert forbidden.data["code"] == "permission_denied"
+
+
+def test_project_manager_can_approve_and_reopen_task(project_team):
+    project, manager, member, _ = project_team
+    task_id = create_task(project, manager, member).data["id"]
+    manager_client = client_for(manager)
+
+    for expected_status in ("IN_PROGRESS", "REVIEW", "DONE"):
+        response = manager_client.patch(
+            f"/api/tasks/{task_id}/status/",
+            {"status": expected_status},
+            format="json",
+        )
+        assert response.status_code == 200
+
+    forbidden = client_for(member).patch(
+        f"/api/tasks/{task_id}/status/",
+        {"status": "REVIEW"},
+        format="json",
+    )
+    assert forbidden.status_code == 403
+
+    reopened = manager_client.patch(
         f"/api/tasks/{task_id}/status/",
         {"status": "REVIEW"},
         format="json",
     )
     assert reopened.status_code == 200
     assert reopened.data["completed_at"] is None
+
+
+def test_admin_can_approve_and_reopen_task(project_team):
+    project, manager, member, _ = project_team
+    admin = make_user("admin@example.com", User.Role.ADMIN)
+    task_id = create_task(project, manager, member).data["id"]
+    manager_client = client_for(manager)
+    admin_client = client_for(admin)
+
+    for expected_status in ("IN_PROGRESS", "REVIEW"):
+        assert manager_client.patch(
+            f"/api/tasks/{task_id}/status/",
+            {"status": expected_status},
+            format="json",
+        ).status_code == 200
+
+    assert admin_client.patch(
+        f"/api/tasks/{task_id}/status/",
+        {"status": "DONE"},
+        format="json",
+    ).status_code == 200
+    assert admin_client.patch(
+        f"/api/tasks/{task_id}/status/",
+        {"status": "REVIEW"},
+        format="json",
+    ).status_code == 200
 
 
 def test_invalid_transition_and_unrelated_member_are_rejected(project_team):

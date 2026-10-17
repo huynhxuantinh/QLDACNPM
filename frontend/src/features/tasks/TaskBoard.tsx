@@ -1,4 +1,4 @@
-import { CalendarDays, CircleUserRound, MoreHorizontal } from "lucide-react";
+import { CalendarDays, CircleUserRound, Pencil, Trash2 } from "lucide-react";
 
 import { Avatar, EmptyState } from "../../components";
 import type { Task, TaskStatus } from "../../types";
@@ -6,7 +6,15 @@ import { formatDueDate, groupTasksByStatus, TASK_COLUMNS } from "../../utils";
 
 const priorityLabel = { LOW: "Thấp", MEDIUM: "Trung bình", HIGH: "Cao", URGENT: "Khẩn cấp" };
 
-export function TaskBoard({ tasks, onStatusChange }: { tasks: Task[]; onStatusChange: (id: number, status: TaskStatus) => void }) {
+interface Props {
+  tasks: Task[];
+  onStatusChange: (id: number, status: TaskStatus) => void;
+  onEdit?: (task: Task) => void;
+  onDelete?: (task: Task) => void;
+  canManageTask?: (task: Task) => boolean;
+}
+
+export function TaskBoard({ tasks, onStatusChange, onEdit, onDelete, canManageTask }: Props) {
   const groups = groupTasksByStatus(tasks);
   return (
     <div className="task-board">
@@ -16,7 +24,7 @@ export function TaskBoard({ tasks, onStatusChange }: { tasks: Task[]; onStatusCh
           <div className="task-stack">
             {groups[column.id].map((task) => (
               <article className="task-card" key={task.id}>
-                <div className="task-card-top"><span className={`priority priority-${task.priority.toLowerCase()}`}>{priorityLabel[task.priority]}</span><button aria-label="Tùy chọn"><MoreHorizontal size={18} /></button></div>
+                <div className="task-card-top"><span className={`priority priority-${task.priority.toLowerCase()}`}>{priorityLabel[task.priority]}</span><span className="task-actions">{(!canManageTask || canManageTask(task)) && <>{onEdit && <button aria-label={`Sửa ${task.title}`} onClick={() => onEdit(task)}><Pencil size={14} /></button>}{onDelete && <button aria-label={`Xóa ${task.title}`} onClick={() => onDelete(task)}><Trash2 size={14} /></button>}</>}</span></div>
                 <h4>{task.title}</h4><p>{task.description || "Chưa có mô tả."}</p>
                 <div className="task-meta"><span><CalendarDays size={15} />{formatDueDate(task.due_date)}</span></div>
                 <footer>

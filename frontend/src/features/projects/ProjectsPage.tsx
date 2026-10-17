@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Calendar, FolderKanban, Plus, Search } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import { api } from "../../api";
 import { Avatar, EmptyState, Modal, PageHeader } from "../../components";
@@ -31,7 +32,7 @@ export function ProjectsPage() {
         <div className="project-card-head"><span className={`folder-icon color-${index % 3}`}><FolderKanban size={22} /></span><span className={`status-badge status-${project.status.toLowerCase()}`}>{statusLabel[project.status]}</span></div>
         <h2>{project.name}</h2><p>{project.description || "Chưa có mô tả dự án."}</p>
         <div className="project-dates"><span><Calendar size={15} /> {formatDueDate(project.due_date)}</span></div>
-        <footer><span><Avatar user={project.owner} size="sm" /><small>{project.owner.full_name}</small></span><button>Xem chi tiết</button></footer>
+        <footer><span><Avatar user={project.owner} size="sm" /><small>{project.owner.full_name}</small></span><Link to={`/projects/${project.id}`}>Xem chi tiết</Link></footer>
       </article>)}
       {!visible.length && <EmptyState title="Chưa có dự án" text="Tạo dự án đầu tiên để bắt đầu" />}
     </section>

@@ -2,7 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { DashboardPage } from "./features/dashboard";
 import { LoginPage, useAuth } from "./features/auth";
-import { ProjectsPage } from "./features/projects";
+import { ProjectDetailPage, ProjectsPage } from "./features/projects";
 import { TasksPage } from "./features/tasks";
 import { AppShell } from "./layouts";
 import { UsersPage } from "./pages";
@@ -14,6 +14,7 @@ function App() {
   return <AppShell><Routes>
     <Route path="/" element={<DashboardPage />} />
     <Route path="/projects" element={<ProjectsPage />} />
+    <Route path="/projects/:id" element={<ProjectDetailPage />} />
     <Route path="/tasks" element={<TasksPage />} />
     <Route path="/users" element={user.role === "ADMIN" ? <UsersPage /> : <Navigate to="/" replace />} />
     <Route path="*" element={<Navigate to="/" replace />} />

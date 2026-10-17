@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -14,11 +15,14 @@ from .serializers import ProjectMemberSerializer, ProjectSerializer
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
+    queryset = Project.objects.select_related("owner")
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated, ProjectAccessPermission]
 
     def get_queryset(self):
-        queryset = Project.objects.select_related("owner")
+        queryset = self.queryset
+        if getattr(self, "swagger_fake_view", False):
+            return queryset.none()
         user = self.request.user
         if user.role == User.Role.ADMIN:
             return queryset
@@ -54,6 +58,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="user_id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="ID người dùng cần xóa khỏi dự án.",
+            )
+        ],
+        responses={204: None},
+    )
     @action(
         detail=True,
         methods=["delete"],

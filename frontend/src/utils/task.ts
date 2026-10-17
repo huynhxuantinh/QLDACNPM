@@ -19,6 +19,15 @@ export function projectProgress(tasks: Task[]): number {
   return Math.round((tasks.filter((task) => task.status === "DONE").length / tasks.length) * 100);
 }
 
+export function tasksNeedingAttention(tasks: Task[], now = new Date()): Task[] {
+  const cutoff = new Date(now);
+  cutoff.setDate(cutoff.getDate() + 7);
+
+  return tasks
+    .filter((task) => task.status !== "DONE" && task.due_date && new Date(task.due_date) <= cutoff)
+    .sort((left, right) => new Date(left.due_date!).getTime() - new Date(right.due_date!).getTime());
+}
+
 export function formatDueDate(value: string | null): string {
   if (!value) return "Chưa đặt hạn";
   return new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date(value));

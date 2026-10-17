@@ -6,7 +6,7 @@ import { api } from "../../api";
 import { Avatar, EmptyState, PageHeader } from "../../components";
 import { useAuth } from "../auth";
 import type { DashboardSummary, Project, Task } from "../../types";
-import { formatDueDate } from "../../utils";
+import { formatDueDate, tasksNeedingAttention } from "../../utils";
 
 const initialSummary: DashboardSummary = { total: 0, todo: 0, in_progress: 0, review: 0, done: 0, overdue: 0, completion_rate: 0 };
 
@@ -30,6 +30,7 @@ export function DashboardPage() {
     { label: "Đã hoàn thành", value: summary.done, icon: CheckCheck, tone: "lime" },
     { label: "Quá hạn", value: summary.overdue, icon: AlertTriangle, tone: "coral" },
   ];
+  const attentionTasks = tasksNeedingAttention(tasks);
 
   return (
     <div className="page-enter">
@@ -40,7 +41,7 @@ export function DashboardPage() {
 
       <section className="dashboard-grid">
         <article className="panel progress-panel">
-          <header><div><p className="panel-kicker">Hiệu suất chung</p><h2>Tiến độ hoàn thành</h2></div><span className="trend-pill">+12% tháng này</span></header>
+          <header><div><p className="panel-kicker">Hiệu suất chung</p><h2>Tiến độ hoàn thành</h2></div><span className="trend-pill">{loading ? "Đang tải" : `${summary.done}/${summary.total} công việc`}</span></header>
           <div className="progress-visual">
             <div className="progress-ring" style={{ "--progress": `${summary.completion_rate * 3.6}deg` } as React.CSSProperties}><span><strong>{Math.round(summary.completion_rate)}%</strong><small>hoàn thành</small></span></div>
             <div className="progress-legend">
@@ -52,8 +53,8 @@ export function DashboardPage() {
         <article className="panel deadlines-panel">
           <header><div><p className="panel-kicker">Sắp đến hạn</p><h2>Việc cần chú ý</h2></div><Link to="/tasks">Xem tất cả</Link></header>
           <div className="deadline-list">
-            {tasks.slice(0, 4).map((task) => <div className="deadline-item" key={task.id}><span className={`priority-bar priority-${task.priority.toLowerCase()}`} /><div><strong>{task.title}</strong><small><Clock3 size={13} /> {formatDueDate(task.due_date)}</small></div>{task.assignee && <Avatar user={task.assignee} size="sm" />}</div>)}
-            {!tasks.length && !loading && <EmptyState title="Không có việc gấp" text="Bạn đang kiểm soát tốt tiến độ" />}
+            {attentionTasks.slice(0, 4).map((task) => <div className="deadline-item" key={task.id}><span className={`priority-bar priority-${task.priority.toLowerCase()}`} /><div><strong>{task.title}</strong><small><Clock3 size={13} /> {formatDueDate(task.due_date)}</small></div>{task.assignee && <Avatar user={task.assignee} size="sm" />}</div>)}
+            {!attentionTasks.length && !loading && <EmptyState title="Không có việc gấp" text="Không có việc quá hạn hoặc đến hạn trong 7 ngày" />}
           </div>
         </article>
       </section>

@@ -94,4 +94,22 @@ describe("AppShell live data", () => {
     expect(screen.queryByText("Việc đã xong")).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Xem tất cả công việc" })).toHaveAttribute("href", "/tasks");
   });
+
+  it("hiển thị trạng thái lỗi thật và vẫn cho phép điều hướng tài khoản", async () => {
+    apiMock.dashboard.mockRejectedValueOnce(new Error("Mất kết nối"));
+    apiMock.tasks.mockRejectedValueOnce(new Error("Mất kết nối"));
+    const user = userEvent.setup();
+    renderShell();
+
+    expect(await screen.findByText("Không thể tải")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Thông báo" }));
+    expect(screen.getByText("Không thể tải thông báo.")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Mở menu" }));
+    expect(document.querySelector(".sidebar")).toHaveClass("is-open");
+    await user.click(screen.getAllByRole("button", { name: "Đóng menu" })[0]);
+    expect(document.querySelector(".sidebar")).not.toHaveClass("is-open");
+    await user.click(screen.getByRole("button", { name: "Đăng xuất" }));
+    expect(logoutMock).toHaveBeenCalled();
+  });
 });

@@ -31,6 +31,16 @@ def member_user():
     )
 
 
+@pytest.fixture
+def project_manager_user():
+    return get_user_model().objects.create_user(
+        email="pm@example.com",
+        password="StrongPass123!",
+        full_name="Quản lý dự án",
+        role=get_user_model().Role.PROJECT_MANAGER,
+    )
+
+
 def test_member_cannot_manage_users(member_user):
     client = authenticated_client(member_user)
 
@@ -47,6 +57,60 @@ def test_member_cannot_manage_users(member_user):
         ).status_code
         == 403
     )
+
+
+def test_project_manager_can_search_active_users_with_minimal_fields(
+    project_manager_user, member_user
+):
+    user_model = get_user_model()
+    user_model.objects.create_user(
+        email="inactive@example.com",
+        password="StrongPass123!",
+        full_name="Thành viên ngưng hoạt động",
+        is_active=False,
+    )
+    user_model.objects.create_user(
+        email="other@example.com",
+        password="StrongPass123!",
+        full_name="Người khác",
+    )
+    client = authenticated_client(project_manager_user)
+
+    response = client.get("/api/users/", {"search": "member@example.com"})
+
+    assert response.status_code == 200
+    assert response.data["count"] == 1
+    assert response.data["results"][0] == {
+        "id": member_user.id,
+        "email": member_user.email,
+        "full_name": member_user.full_name,
+        "role": member_user.role,
+        "avatar_url": member_user.avatar_url,
+    }
+
+
+def test_project_manager_cannot_create_or_update_users(
+    project_manager_user, member_user
+):
+    client = authenticated_client(project_manager_user)
+
+    created = client.post(
+        "/api/users/",
+        {
+            "email": "new@example.com",
+            "full_name": "Người mới",
+            "password": "StrongPass123!",
+        },
+        format="json",
+    )
+    updated = client.patch(
+        f"/api/users/{member_user.id}/",
+        {"is_active": False},
+        format="json",
+    )
+
+    assert created.status_code == 403
+    assert updated.status_code == 403
 
 
 def test_admin_can_create_and_list_users_without_exposing_password(admin_user):

@@ -149,4 +149,15 @@ describe("API request contracts", () => {
 
     await expect(api.logout("refresh")).resolves.toBeUndefined();
   });
+
+  it("mã hóa từ khóa khi tìm người dùng để thêm vào dự án", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse({ count: 0, next: null, previous: null, results: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await api.userOptions("Nguyễn Văn A@example.com");
+
+    expect(fetchMock.mock.calls[0][0]).toBe(
+      `${API_BASE_URL}/users/?search=Nguy%E1%BB%85n%20V%C4%83n%20A%40example.com`,
+    );
+  });
 });

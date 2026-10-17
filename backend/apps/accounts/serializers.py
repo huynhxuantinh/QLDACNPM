@@ -53,6 +53,16 @@ class UserManageSerializer(UserSerializer):
     def validate(self, attrs):
         if self.instance is None and not attrs.get("password"):
             raise serializers.ValidationError({"password": "Mật khẩu là bắt buộc."})
+
+        request = self.context.get("request")
+        if self.instance and request and self.instance.pk == request.user.pk:
+            errors = {}
+            if attrs.get("is_active") is False:
+                errors["is_active"] = "Bạn không thể tự khóa tài khoản của mình."
+            if "role" in attrs and attrs["role"] != User.Role.ADMIN:
+                errors["role"] = "Bạn không thể tự hạ quyền quản trị viên."
+            if errors:
+                raise serializers.ValidationError(errors)
         return attrs
 
     def create(self, validated_data):

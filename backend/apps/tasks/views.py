@@ -62,7 +62,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         task = self.get_object()
         serializer = TaskStatusSerializer(
             data=request.data,
-            context={"task": task},
+            context={"task": task, "request": request},
         )
         serializer.is_valid(raise_exception=True)
         task = serializer.save()

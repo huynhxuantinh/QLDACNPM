@@ -1,4 +1,4 @@
-import type { Task, TaskStatus } from "../types";
+import type { Task, TaskStatus, User } from "../types";
 
 export const TASK_COLUMNS: { id: TaskStatus; label: string; hint: string }[] = [
   { id: "TODO", label: "Cần làm", hint: "Đã lên kế hoạch" },
@@ -6,6 +6,31 @@ export const TASK_COLUMNS: { id: TaskStatus; label: string; hint: string }[] = [
   { id: "REVIEW", label: "Chờ duyệt", hint: "Cần kiểm tra" },
   { id: "DONE", label: "Hoàn thành", hint: "Đã kết thúc" },
 ];
+
+const managerTransitions: Record<TaskStatus, TaskStatus[]> = {
+  TODO: ["IN_PROGRESS"],
+  IN_PROGRESS: ["TODO", "REVIEW"],
+  REVIEW: ["IN_PROGRESS", "DONE"],
+  DONE: ["REVIEW"],
+};
+
+const memberTransitions: Record<TaskStatus, TaskStatus[]> = {
+  TODO: ["IN_PROGRESS"],
+  IN_PROGRESS: ["REVIEW"],
+  REVIEW: [],
+  DONE: [],
+};
+
+export function taskStatusOptions(task: Task, user: User | null, canManage: boolean): TaskStatus[] {
+  if (!user) return [task.status];
+  const isAssignee = task.assignee?.id === user.id;
+  if (!canManage && !isAssignee) return [task.status];
+
+  const hasReviewAuthority = user.role === "ADMIN" || user.role === "PROJECT_MANAGER";
+  const transitions = hasReviewAuthority ? managerTransitions : memberTransitions;
+  const allowed = new Set<TaskStatus>([task.status, ...transitions[task.status]]);
+  return TASK_COLUMNS.map((column) => column.id).filter((status) => allowed.has(status));
+}
 
 export function groupTasksByStatus(tasks: Task[]): Record<TaskStatus, Task[]> {
   return tasks.reduce<Record<TaskStatus, Task[]>>((groups, task) => {

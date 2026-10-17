@@ -77,4 +77,5 @@ class TaskStatusSerializer(serializers.Serializer):
         return TaskWorkflow.transition(
             self.context["task"],
             self.validated_data["status"],
+            self.context["request"].user,
         )

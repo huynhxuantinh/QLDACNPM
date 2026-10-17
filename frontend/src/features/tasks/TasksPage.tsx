@@ -62,7 +62,7 @@ export function TasksPage() {
       <span className="result-count">{visible.length} việc</span>
     </div>
     {error && <p className="inline-alert">{error}</p>}
-    <TaskBoard tasks={visible} onStatusChange={(id, status) => void changeStatus(id, status)} onEdit={(task) => void startEdit(task)} onDelete={setDeleting} canManageTask={canManageTask} />
+    <TaskBoard tasks={visible} currentUser={user} onStatusChange={(id, status) => void changeStatus(id, status)} onEdit={(task) => void startEdit(task)} onDelete={setDeleting} canManageTask={canManageTask} />
     <Modal title={editing ? "Sửa công việc" : "Tạo công việc mới"} open={open} onClose={() => { setOpen(false); setEditing(null); }}><form className="modal-form" onSubmit={save}>
       <label>Tiêu đề<input name="title" required placeholder="Công việc cần hoàn thành" defaultValue={editing?.title} /></label>
       <label>Mô tả<textarea name="description" rows={3} placeholder="Kết quả mong đợi" defaultValue={editing?.description} /></label>

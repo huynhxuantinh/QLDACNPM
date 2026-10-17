@@ -79,6 +79,16 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if str(project.owner_id) == str(user_id):
             raise Conflict("Không thể xóa chủ sở hữu khỏi dự án.")
 
+        from apps.tasks.models import Task
+
+        has_open_tasks = Task.objects.filter(
+            project=project,
+            assignee_id=user_id,
+            is_deleted=False,
+        ).exclude(status=Task.Status.DONE).exists()
+        if has_open_tasks:
+            raise Conflict("Hãy giao lại công việc chưa hoàn thành trước khi xóa thành viên.")
+
         membership = get_object_or_404(
             ProjectMember,
             project=project,
